@@ -1,0 +1,36 @@
+[package]
+name = "distributed_flight_system"
+version = "0.1.0"
+edition = "2021"
+authors = ["Phil", "Henry"]
+description = "Distributed flight information system - CZ4013 NTU coursework"
+readme = "README.md"
+keywords = ["CZ4013", "NTU", "22-23 Sem 1", "Distributed System"]
+
+[dependencies]
+server = { path = "server" }
+client = { path = "client" }
+serde = { path = "serde" }
+rpc_contracts = { path = "rpc_contracts" }
+tokio = { version = "1.26.0", features = ["full"] }
+clap = { version = "4.2.1", features = ["derive"] }
+rand = "0.8.5"
+
+[workspace]
+members = ["server", "serde", "client", "rpc_contracts"]
+package = { authors = ["Phil", "Henry"] }
+
+[workspace.dependencies]
+lazy_static = "1.4.0"
+serial_test = "1.0.0"
+tokio = { version = "1.26.0", features = ["full"] }
+clap = { version = "4.2.1", features = ["derive"] }
+rand = "0.8.5"
+
+[[bin]]
+name = "server"
+path = "server/src/main.rs"
+
+[[bin]]
+name = "client"
+path = "client/src/main.rs"

@@ -1,0 +1,17 @@
+# All options: https://rust-lang.github.io/rustfmt/?version=v1.5.1&search=
+# The default: https://rust-lang.github.io/rustfmt/?version=v1.5.1&search=#Default%5C%20%5C(default%5C)%5C%3A
+edition="2021"
+hard_tabs=false
+tab_spaces=4
+brace_style="PreferSameLine"
+color="Always"
+max_width=150
+comment_width=150
+fn_call_width=120
+condense_wildcard_suffixes=true # https://rust-lang.github.io/rustfmt/?version=v1.5.1&search=#condense_wildcard_suffixes
+fn_args_layout="Compressed" # https://rust-lang.github.io/rustfmt/?version=v1.5.1&search=#fn_args_layout
+fn_single_line=true
+format_code_in_doc_comments=true
+struct_field_align_threshold=10 # https://rust-lang.github.io/rustfmt/?version=v1.5.1&search=#struct_field_align_threshold
+use_field_init_shorthand=true
+

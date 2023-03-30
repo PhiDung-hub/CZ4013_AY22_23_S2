@@ -1,0 +1,10 @@
+[package]
+name = "rpc_contracts"
+version = "0.1.0"
+edition = "2021"
+authors.workspace = true
+
+[dependencies]
+serde = { path = "../serde" }
+lazy_static.workspace = true
+tokio.workspace = true

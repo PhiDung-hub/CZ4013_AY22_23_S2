@@ -1,0 +1,17 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+authors.workspace = true
+
+[dependencies]
+database = { path = "database" }
+serde = { path ="../serde" }
+rpc_contracts = { path = "../rpc_contracts" }
+tokio = { version = "1.26.0", features = ["full"] }
+rand.workspace = true
+clap.workspace = true
+
+[lib]
+name = "server"
+path = "src/lib.rs"
