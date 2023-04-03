@@ -218,6 +218,7 @@ impl<'a> ServiceHandler<'a> {
                 let message = status.to_string();
                 let mut success_response = RPCResponse::finished(_req.id).await;
                 success_response.encode_body(Service5ResponseBody { message });
+                self.send_update(flight_id, ReservationStatus::Updated).await;
                 Ok(success_response)
             }
             CancellationStatus::ReservationNotExisted => Err(APIError::RecordNotFound),

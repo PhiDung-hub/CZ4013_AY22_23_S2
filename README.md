@@ -30,10 +30,9 @@ cargo run --bin <exe_regex>
 ```
 For a full list of executables, please see `Cargo.toml` and `src/bin` of each module/sub-module.
 
-### Seed Database
+### Seed Database (MUST RUN FROM ROOT)
 ```bash
-cd server
-cargo run --bin seed_db
+cargo run -p server --bin seed_db
 ```
 
 

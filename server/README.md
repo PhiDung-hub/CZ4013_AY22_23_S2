@@ -10,6 +10,7 @@ cargo run --bin server [-- -<options>]
 ```bash
 cargo run --bin seed_db
 ```
+Then move the `flight_informations.db` file to root folder.
 
 
 Available options are:
