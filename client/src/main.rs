@@ -8,14 +8,17 @@ use tokio::net::UdpSocket;
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
+    #[arg(short, long, default_value = "127.0.0.1")]
+    addr: String,
+
+    #[arg(short, long, default_value = "3000")]
+    port: u16,
+
     #[arg(long, default_value = "127.0.0.1")]
     server_addr: String,
 
     #[arg(long, default_value = "1234")]
     server_port: u16,
-
-    #[arg(short, long, default_value = "3000")]
-    port: u16,
 
     #[arg(short, long, default_value = "false")]
     loss: bool,
@@ -30,14 +33,15 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let options = Args::parse();
+    let addr = options.addr;
+    let port = options.port;
     let server_addr = options.server_addr;
     let server_port = options.server_port;
-    let port = options.port;
     let loss = options.loss;
     let loss_prob = options.loss_prob;
     let retry = options.retry;
 
-    let socket = UdpSocket::bind((server_addr.clone(), port)).await?;
+    let socket = UdpSocket::bind((addr, port)).await?;
     let consumer = ServiceConsumer::new(&socket, server_addr, server_port, retry);
 
     let mut rng = rand::thread_rng();
