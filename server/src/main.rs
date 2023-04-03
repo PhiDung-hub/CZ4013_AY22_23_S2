@@ -28,8 +28,6 @@ struct Args {
     #[arg(long, default_value = "0.25")]
     loss_prob: f64,
 }
-//
-// // const SERVER_ADDRESS: &str = "172.20.252.214";
 
 static mut SENDER: Option<mpsc::Sender<(u32, ReservationStatus)>> = None;
 static mut RECEIVER: Option<mpsc::Receiver<(u32, ReservationStatus)>> = None;

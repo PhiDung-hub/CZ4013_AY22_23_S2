@@ -219,14 +219,18 @@ impl<'a> ServiceConsumer<'a> {
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
         let mut ack = false; // ack must be received from server.
+
+        let request_timeout = sleep(TIME_OUT);
+        tokio::pin!(request_timeout);
+
+        let delay = sleep(Duration::from_secs(monitor_interval as u64));
+        tokio::pin!(delay);
         loop {
-            let delay = sleep(Duration::from_secs(monitor_interval as u64));
-            tokio::pin!(delay);
-
-            let request_timeout = sleep(TIME_OUT);
-            tokio::pin!(request_timeout);
-
             tokio::select! {
+                _ = &mut delay => {
+                    println!("{} response ended monitoring period, time = {}s", service, monitor_interval);
+                    break;
+                }
                 _ = &mut request_timeout => {
                     if !ack {
                         println!("{} response time out: {:?}", service, APIError::TimeOutError);
@@ -235,10 +239,6 @@ impl<'a> ServiceConsumer<'a> {
                         }
                         println!("Request timeout, retry enabled, keep waiting");
                     }
-                }
-                _ = &mut delay => {
-                    println!("{} response ended monitoring period, time = {}s", service, monitor_interval);
-                    break;
                 }
                 response_result = self.socket.recv_from(&mut buffer) => {
                     match response_result {
