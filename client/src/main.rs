@@ -149,7 +149,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 stdin().read_line(&mut amount)?;
                 let amount = amount.trim().parse::<u32>().unwrap_or(0);
 
-                consumer.invoke_request_service_3(flight_id, amount).await;
+                consumer.invoke_request_service_6(flight_id, amount).await;
             }
             7 => break,
             _ => println!("Invalid choice. Please try again"),
