@@ -89,6 +89,7 @@ impl<'a> ServiceConsumer<'a> {
         source: String,
         destination: String,
     ) -> Result<RPCResponse> {
+        let service = "Service 1";
         let mut request = RPCRequest::new(1).await;
         request.encode_body(Service1RequestBody {
             source,
@@ -96,7 +97,13 @@ impl<'a> ServiceConsumer<'a> {
         });
 
         let encoded_request = json::to_string(&request);
-        self.send_package(encoded_request.as_bytes()).await?;
+        match self.send_package(encoded_request.as_bytes()).await {
+            Ok(_) => {}
+            Err(_) => {
+                println!("{} communication failed: {:?}", service, APIError::IOFailed);
+                return Err(APIError::IOFailed);
+            }
+        };
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
         let mut time_elapsed = Duration::from_secs(0);
@@ -104,7 +111,6 @@ impl<'a> ServiceConsumer<'a> {
             // TODO: turn this into a macro
             let recv_future = self.socket.recv_from(&mut buffer);
             let timeout_future = timeout(Duration::from_secs(1), recv_future);
-            let service = "Service 1";
             match_consumer_response!(
                 timeout_future,
                 request,
@@ -125,17 +131,23 @@ impl<'a> ServiceConsumer<'a> {
         }
     }
     pub async fn request_service_2(&self, flight_id: u32) -> Result<RPCResponse> {
+        let service = "Service 2";
         let mut request = RPCRequest::new(2).await;
         request.encode_body(Service2RequestBody { flight_id });
         let encoded_request = json::to_string(&request);
-        self.send_package(encoded_request.as_bytes()).await?;
+        match self.send_package(encoded_request.as_bytes()).await {
+            Ok(_) => {}
+            Err(_) => {
+                println!("{} communication failed: {:?}", service, APIError::IOFailed);
+                return Err(APIError::IOFailed);
+            }
+        };
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
         let mut time_elapsed = Duration::from_secs(0);
         loop {
             let recv_future = self.socket.recv_from(&mut buffer);
             let timeout_future = timeout(Duration::from_secs(1), recv_future);
-            let service = "Service 2";
             match_consumer_response!(
                 timeout_future,
                 request,
@@ -158,20 +170,26 @@ impl<'a> ServiceConsumer<'a> {
         }
     }
     pub async fn request_service_3(&self, flight_id: u32, num_seat: u32) -> Result<RPCResponse> {
+        let service = "Service 3";
         let mut request = RPCRequest::new(3).await;
         request.encode_body(Service3RequestBody {
             flight_id,
             num_seat,
         });
         let encoded_request = json::to_string(&request);
-        self.send_package(encoded_request.as_bytes()).await?;
+        match self.send_package(encoded_request.as_bytes()).await {
+            Ok(_) => {}
+            Err(_) => {
+                println!("{} communication failed: {:?}", service, APIError::IOFailed);
+                return Err(APIError::IOFailed);
+            }
+        };
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
         let mut time_elapsed = Duration::from_secs(0);
         loop {
             let recv_future = self.socket.recv_from(&mut buffer);
             let timeout_future = timeout(Duration::from_secs(1), recv_future);
-            let service = "Service 3";
             match_consumer_response!(
                 timeout_future,
                 request,
@@ -185,16 +203,21 @@ impl<'a> ServiceConsumer<'a> {
     }
 
     pub async fn request_service_4(&self, flight_id: u32, monitor_interval: u32) {
+        let service = "Service 4";
         let mut request = RPCRequest::new(4).await;
         request.encode_body(Service4RequestBody {
             flight_id,
             monitor_interval,
         });
         let encoded_request = json::to_string(&request);
-        self.send_package(encoded_request.as_bytes()).await.ok();
+        match self.send_package(encoded_request.as_bytes()).await {
+            Ok(_) => {}
+            Err(_) => {
+                println!("{} communication failed: {:?}", service, APIError::IOFailed);
+            }
+        };
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
-        let service_type = "Service 4";
         let mut ack = false; // ack must be received from server.
         loop {
             let delay = sleep(Duration::from_secs(monitor_interval as u64));
@@ -206,7 +229,7 @@ impl<'a> ServiceConsumer<'a> {
             tokio::select! {
                 _ = &mut request_timeout => {
                     if !ack {
-                        println!("{} response time out: {:?}", service_type, APIError::TimeOutError);
+                        println!("{} response time out: {:?}", service, APIError::TimeOutError);
                         if !self.retry {
                             break;
                         }
@@ -214,7 +237,7 @@ impl<'a> ServiceConsumer<'a> {
                     }
                 }
                 _ = &mut delay => {
-                    println!("{} response ended monitoring period, time = {}s", service_type, monitor_interval);
+                    println!("{} response ended monitoring period, time = {}s", service, monitor_interval);
                     break;
                 }
                 response_result = self.socket.recv_from(&mut buffer) => {
@@ -224,7 +247,7 @@ impl<'a> ServiceConsumer<'a> {
                             let response: RPCResponse = match json::from_str(str_response) {
                                 Ok(response) => response,
                                 Err(_) => {
-                                    println!("{} receives malformed request format from server", service_type);
+                                    println!("{} receives malformed request format from server", service);
                                     continue;
                                 }
                             };
@@ -232,24 +255,24 @@ impl<'a> ServiceConsumer<'a> {
                             match response.status {
                                 ResponseStatus::Finished => {
                                     let Service4ResponseBody { message } = response.decode_body().unwrap();
-                                    println!("{} responses with the following details:", service_type);
+                                    println!("{} responses with the following details:", service);
                                     println!("message = {:?}", message);
                                     ack = true;
                                 }
                                 ResponseStatus::Failed => {
                                     let ServiceFailedResponse { error } = response.decode_body().unwrap();
-                                    println!("{} responses with error: {}", service_type, error.to_string());
+                                    println!("{} responses with error: {}", service, error.to_string());
                                     break;
                                 }
                                 ResponseStatus::Updated => {
                                     let Service4MonitorResponseBody { seat_avail } = response.decode_body().unwrap();
-                                    println!("{} receives the following update:", service_type);
+                                    println!("{} receives the following update:", service);
                                     println!("seat_avail = {:?}", seat_avail);
                                 }
                             }
                         }
                         Err(_) => {
-                            println!("{} communication failed: {:?}", service_type, APIError::IOFailed);
+                            println!("{} communication failed: {:?}", service, APIError::IOFailed);
                             break;
                         }
                     }
@@ -266,17 +289,23 @@ impl<'a> ServiceConsumer<'a> {
         }
     }
     pub async fn request_service_5(&self, flight_id: u32) -> Result<RPCResponse> {
+        let service = "Service 5";
         let mut request = RPCRequest::new(5).await;
         request.encode_body(Service5RequestBody { flight_id });
         let encoded_request = json::to_string(&request);
-        self.send_package(encoded_request.as_bytes()).await?;
+        match self.send_package(encoded_request.as_bytes()).await {
+            Ok(_) => {}
+            Err(_) => {
+                println!("{} communication failed: {:?}", service, APIError::IOFailed);
+                return Err(APIError::IOFailed);
+            }
+        };
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
         let mut time_elapsed = Duration::from_secs(0);
         loop {
             let recv_future = self.socket.recv_from(&mut buffer);
             let timeout_future = timeout(Duration::from_secs(1), recv_future);
-            let service = "Service 5";
             match_consumer_response!(
                 timeout_future,
                 request,
@@ -306,15 +335,21 @@ impl<'a> ServiceConsumer<'a> {
             flight_id,
             amount_in_kg,
         });
+        let service = "Service 6";
         let encoded_request = json::to_string(&request);
-        self.send_package(encoded_request.as_bytes()).await?;
+        match self.send_package(encoded_request.as_bytes()).await {
+            Ok(_) => {}
+            Err(_) => {
+                println!("{} communication failed: {:?}", service, APIError::IOFailed);
+                return Err(APIError::IOFailed);
+            }
+        };
 
         let mut buffer = [0_u8; RESPONSE_SIZE];
         let mut time_elapsed = Duration::from_secs(0);
         loop {
             let recv_future = self.socket.recv_from(&mut buffer);
             let timeout_future = timeout(Duration::from_secs(1), recv_future);
-            let service = "Service 6";
             match_consumer_response!(
                 timeout_future,
                 request,
